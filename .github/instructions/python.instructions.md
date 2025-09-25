@@ -1,5 +1,12 @@
 # Python Development Instructions
 
+*For related guidance, see:*
+- [General Development Instructions](general.instructions.md) - Basic development standards
+- [Development Instructions](development.instructions.md) - Comprehensive development practices
+- [Testing Instructions](testing.instructions.md) - Testing strategies and frameworks
+- [JavaScript Development Instructions](javascript.instructions.md) - JavaScript-specific development
+- [Wallet Integration Instructions](wallet-integration.instructions.md) - Blockchain wallet integration
+
 ## Code Style
 
 - Follow PEP 8 style guidelines
