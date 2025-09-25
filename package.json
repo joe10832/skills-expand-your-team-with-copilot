@@ -1,0 +1,22 @@
+{
+  "name": "skills-expand-your-team-with-copilot",
+  "version": "1.0.0",
+  "description": "Exercise: Expand your team with GitHub Copilot coding agent",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joe10832/skills-expand-your-team-with-copilot.git"
+  },
+  "keywords": [
+    "github",
+    "copilot",
+    "ai",
+    "coding-agent"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {}
+}
