@@ -1,5 +1,12 @@
 # JavaScript Development Instructions
 
+*For related guidance, see:*
+- [General Development Instructions](general.instructions.md) - Basic development standards
+- [Development Instructions](development.instructions.md) - Comprehensive development practices
+- [Testing Instructions](testing.instructions.md) - Testing strategies and frameworks
+- [Python Development Instructions](python.instructions.md) - Python-specific development
+- [Wallet Integration Instructions](wallet-integration.instructions.md) - Blockchain wallet integration
+
 ## Code Style
 
 - Use ES6+ features when appropriate
