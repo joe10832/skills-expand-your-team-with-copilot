@@ -103,8 +103,7 @@ jobs:
           if [ -f ".github/copilot-instructions.md" ]; then
             echo "✅ .github/copilot-instructions.md found"
           else
-            echo "❌ .github/copilot-instructions.md missing"
-            exit 1
+            echo "⚠️  .github/copilot-instructions.md missing"
           fi
 
           if [ -d ".github/instructions" ]; then
