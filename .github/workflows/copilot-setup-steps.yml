@@ -4,7 +4,7 @@ name: GitHub Copilot Setup Steps
 # This workflow sets up the environment for GitHub Copilot coding agents
 # to work efficiently with the repository
 
-"on":
+on:
   # Trigger on pushes to main branch for validation
   push:
     branches: [main]
