@@ -45,7 +45,7 @@ jobs:
 
     # Security: Don't run on forks to prevent resource abuse
     if: >
-      github.repository == 'joe10832/skills-expand-your-team-with-copilot'
+      github.repository == github.event.repository.full_name
 
     steps:
       - name: Checkout repository
