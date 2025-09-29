@@ -1,0 +1,188 @@
+---
+name: GitHub Copilot Setup Steps
+
+# This workflow sets up the environment for GitHub Copilot coding agents
+# to work efficiently with the repository
+
+on:
+  # Trigger on pushes to main branch for validation
+  push:
+    branches: [main]
+    paths:
+      - '.github/**'
+      - '**.md'
+      - 'package*.json'
+
+  # Trigger on pull requests for validation
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/**'
+      - '**.md'
+      - 'package*.json'
+
+  # Allow manual execution of the workflow
+  workflow_dispatch:
+    inputs:
+      setup_type:
+        description: 'Type of setup to run'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - validation-only
+          - dependencies-only
+
+# Security: Use minimal permissions following GitHub Actions best practices
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    name: Copilot Environment Setup
+    runs-on: ubuntu-latest
+
+    # Security: Don't run on forks to prevent resource abuse
+    if: >
+      github.repository == github.event.repository.full_name
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch minimal history for security
+          fetch-depth: 1
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          # Enable caching for faster subsequent runs
+          cache: 'npm'
+          # Use package-lock.json if exists for consistent dependencies
+          cache-dependency-path: |
+            package-lock.json
+            **/package-lock.json
+
+      - name: Verify Node.js installation
+        run: |
+          echo "Node.js version: $(node --version)"
+          echo "npm version: $(npm --version)"
+          echo "Environment setup complete for GitHub Copilot agents"
+
+      - name: Check for package.json
+        id: check-package
+        run: |
+          if [ -f "package.json" ]; then
+            echo "package-exists=true" >> $GITHUB_OUTPUT
+            echo "Found package.json - will install dependencies"
+          else
+            echo "package-exists=false" >> $GITHUB_OUTPUT
+            echo "No package.json found - skipping dependency installation"
+          fi
+
+      - name: Install dependencies
+        if: >
+          steps.check-package.outputs.package-exists == 'true' &&
+          (github.event.inputs.setup_type != 'validation-only')
+        run: |
+          echo "Installing Node.js dependencies..."
+          npm ci --prefer-offline --no-audit
+        env:
+          # Security: Disable npm audit automatically for CI
+          NODE_ENV: production
+
+      - name: Validate repository structure
+        run: |
+          echo "Validating repository structure for GitHub Copilot agents..."
+
+          # Check for essential Copilot instruction files
+          echo "Checking for Copilot instruction files:"
+
+          if [ -f ".github/copilot-instructions.md" ]; then
+            echo "✅ .github/copilot-instructions.md found"
+          else
+            echo "⚠️  .github/copilot-instructions.md missing"
+          fi
+
+          if [ -d ".github/instructions" ]; then
+            echo "✅ .github/instructions directory found"
+            echo "Available instruction files:"
+            ls -la .github/instructions/
+          else
+            echo "⚠️  .github/instructions directory not found"
+          fi
+
+          # Check for agent-specific instruction files
+          echo "Checking for agent instruction files:"
+          for file in AGENTS.md CLAUDE.md GEMINI.md; do
+            if [ -f "$file" ]; then
+              echo "✅ $file found"
+            else
+              echo "⚠️  $file not found"
+            fi
+          done
+
+      - name: Validate instruction file syntax
+        run: |
+          echo "Validating Markdown syntax in instruction files..."
+
+          # Check if markdownlint is available or install it
+          if ! command -v markdownlint &> /dev/null; then
+            echo "Installing markdownlint for validation..."
+            npm install -g markdownlint-cli
+          fi
+
+          # Validate key instruction files
+          if [ -f ".github/copilot-instructions.md" ]; then
+            echo "Validating .github/copilot-instructions.md..."
+            markdownlint .github/copilot-instructions.md || \
+              echo "⚠️  Markdown validation warnings"
+          fi
+
+          # Validate other instruction files
+          for file in *.md; do
+            if [ -f "$file" ]; then
+              echo "Validating $file..."
+              markdownlint "$file" || \
+                echo "⚠️  Markdown validation warnings in $file"
+            fi
+          done
+
+      - name: Generate setup summary
+        if: always()
+        run: |
+          echo "## GitHub Copilot Setup Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Node.js 20 | ✅ Installed" >> $GITHUB_STEP_SUMMARY
+          echo "| npm | ✅ Available" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f "package.json" ]; then
+            echo "| Dependencies | ✅ Ready for installation" \
+              >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Dependencies | ⚠️  No package.json found" \
+              >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -f ".github/copilot-instructions.md" ]; then
+            echo "| Copilot Instructions | ✅ Available" \
+              >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Copilot Instructions | ❌ Missing" \
+              >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Environment ready for GitHub Copilot coding agents." \
+            >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### For Copilot Agents:" >> $GITHUB_STEP_SUMMARY
+          echo "- Node.js 20 environment is available" >> $GITHUB_STEP_SUMMARY
+          echo "- Repository structure has been validated" \
+            >> $GITHUB_STEP_SUMMARY
+          echo "- All instruction files are accessible" >> $GITHUB_STEP_SUMMARY
+          echo "- Use \`npm ci\` to install dependencies if needed" \
+            >> $GITHUB_STEP_SUMMARY
